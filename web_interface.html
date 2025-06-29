@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KixieGPT for Hubspot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .query-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .quick-questions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .quick-question {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-question:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .quick-question h4 {
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .quick-question p {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .results-section {
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 2px solid #e9ecef;
+            display: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f4;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .result-source {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .actions-section {
+            background: #e8f4fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .status-bar {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+        
+        .status-dot.offline {
+            background: #dc3545;
+        }
+        
+        .status-dot.loading {
+            background: #ffc107;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .log-section {
+            background: #212529;
+            color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .log-info { background: rgba(23, 162, 184, 0.2); }
+        .log-success { background: rgba(40, 167, 69, 0.2); }
+        .log-error { background: rgba(220, 53, 69, 0.2); }
+        .log-warning { background: rgba(255, 193, 7, 0.2); }
+        
+        .summary-section {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .summary-section h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 KixieGPT for Hubspot</h1>
+            <p>Ask questions about your data and trigger automated actions</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <div class="status-dot" id="status-dot"></div>
+                    <span id="status-text">Ready</span>
+                </div>
+                <div>
+                    <button class="btn btn-secondary" onclick="testConnections()">Test Connections</button>
+                    <button class="btn btn-secondary" onclick="clearLogs()">Clear Logs</button>
+                </div>
+            </div>
+            
+            <!-- Quick Questions -->
+            <div class="query-section">
+                <h3>💡 Quick Questions</h3>
+                <p>Click on any of these common business questions:</p>
+                <div class="quick-questions" id="quick-questions">
+                    <div class="quick-question" onclick="selectQuestion('How many new contacts did we get this month?')">
+                        <h4>📈 New Contacts</h4>
+                        <p>Get recent contact growth metrics</p>
+                    </div>
+                    <div class="quick-question" onclick="selectQuestion('Show me deals over $5,000 that haven\\'t been updated in 2 weeks')">
+                        <h4>💰 Stale High-Value Deals</h4>
+                        <p>Find opportunities that need attention</p>
+                    </div>
+                    <div class="quick-question" onclick="selectQuestion('Which companies in the technology industry have the most contacts?')">
+                        <h4>🏢 Top Tech Companies</h4>
+                        <p>Analyze contact distribution by industry</p>
+                    </div>
+                    <div class="quick-question" onclick="selectQuestion('Find contacts who opened our emails but didn\\'t book a meeting')">
+                        <h4>📧 Engaged Prospects</h4>
+                        <p>Identify warm leads to follow up</p>
+                    </div>
+                    <div class="quick-question" onclick="selectQuestion('Show me customers who haven\\'t been contacted in 60 days')">
+                        <h4>😴 Dormant Customers</h4>
+                        <p>Re-engage neglected accounts</p>
+                    </div>
+                    <div class="quick-question" onclick="selectQuestion('What\\'s our conversion rate from lead to customer this quarter?')">
+                        <h4>📊 Conversion Metrics</h4>
+                        <p>Track sales performance</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Custom Query -->
+            <div class="query-section">
+                <h3>🤔 Ask Your Question</h3>
+                <div class="input-group">
+                    <label for="user-question">What would you like to know about your business data?</label>
+                    <textarea id="user-question" rows="3" placeholder="e.g., Find all contacts in California with deals over $10,000 who haven't been contacted this month"></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label for="action-type">What action should I take with the results?</label>
+                    <select id="action-type">
+                        <option value="">No action - just show results</option>
+                        <option value="send_notification">Send notification</option>
+                        <option value="send_sms">Send SMS via Kixie</option>
+                        <option value="create_task">Create follow-up tasks</option>
+                        <option value="generate_report">Generate report</option>
+                        <option value="send_email">Send email campaign</option>
+                    </select>
+                </div>
+                
+                <button class="btn" id="process-btn" onclick="processQuestion()">🚀 Process Question</button>
+                <button class="btn btn-secondary" onclick="clearResults()">Clear Results</button>
+            </div>
+            
+            <!-- Results Section -->
+            <div class="results-section" id="results-section">
+                <h3>📊 Results</h3>
+                <div id="results-content"></div>
+                
+                <!-- Actions Section -->
+                <div class="actions-section" id="actions-section" style="display: none;">
+                    <h4>🚀 Available Actions</h4>
+                    <div class="actions-grid">
+                        <button class="btn btn-success" onclick="executeAction('send_sms')">📱 Send SMS</button>
+                        <button class="btn btn-success" onclick="executeAction('send_notification')">🔔 Notify Team</button>
+                        <button class="btn btn-success" onclick="executeAction('create_task')">✅ Create Tasks</button>
+                        <button class="btn btn-success" onclick="executeAction('generate_report')">📄 Generate Report</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Log Section -->
+            <div class="log-section" id="log-section">
+                <h4>📝 Activity Log</h4>
+                <div id="log-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentResults = null;
+        let isProcessing = false;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('System initialized and ready', 'info');
+            updateStatus('ready');
+            checkSystemStatus();
+        });
+        
+        function selectQuestion(question) {
+            document.getElementById('user-question').value = question;
+            addLog(`Selected question: ${question}`, 'info');
+        }
+        
+        function updateStatus(status, message = '') {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            
+            statusDot.className = 'status-dot';
+            
+            switch(status) {
+                case 'ready':
+                    statusText.textContent = 'Ready';
+                    break;
+                case 'processing':
+                    statusDot.classList.add('loading');
+                    statusText.textContent = message || 'Processing...';
+                    break;
+                case 'error':
+                    statusDot.classList.add('offline');
+                    statusText.textContent = message || 'Error';
+                    break;
+                case 'success':
+                    statusText.textContent = message || 'Success';
+                    break;
+            }
+        }
+        
+        function addLog(message, type = 'info') {
+            const logContent = document.getElementById('log-content');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContent.appendChild(logEntry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+        
+        function clearLogs() {
+            document.getElementById('log-content').innerHTML = '';
+            addLog('Logs cleared', 'info');
+        }
+        
+        function clearResults() {
+            document.getElementById('results-section').style.display = 'none';
+            document.getElementById('results-content').innerHTML = '';
+            document.getElementById('actions-section').style.display = 'none';
+            currentResults = null;
+            addLog('Results cleared', 'info');
+        }
+        
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                if (data.system_initialized) {
+                    addLog('✅ Backend system is initialized', 'success');
+                } else {
+                    addLog('❌ Backend system not initialized', 'error');
+                }
+                
+                // Check environment variables
+                const env = data.environment;
+                addLog(`HubSpot API: ${env.hubspot_api_key ? 'Configured' : 'Missing'}`, 
+                       env.hubspot_api_key ? 'success' : 'warning');
+                addLog(`Claude API: ${env.claude_api_key ? 'Configured' : 'Missing'}`, 
+                       env.claude_api_key ? 'success' : 'warning');
+                addLog(`MySQL: ${env.mysql_configured ? 'Configured' : 'Missing'}`, 
+                       env.mysql_configured ? 'success' : 'warning');
+                addLog(`Kixie SMS: ${env.kixie_configured ? 'Configured' : 'Missing'}`, 
+                       env.kixie_configured ? 'success' : 'warning');
+                
+            } catch (error) {
+                addLog(`❌ Could not connect to backend: ${error.message}`, 'error');
+                updateStatus('error', 'Backend unavailable');
+            }
+        }
+        
+        async function testConnections() {
+            updateStatus('processing', 'Testing connections...');
+            addLog('Testing API connections...', 'info');
+            
+            try {
+                const response = await fetch('/api/test-connections', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const results = data.results;
+                    addLog(`✅ HubSpot API: ${results.hubspot ? 'Connected' : 'Failed'}`, 
+                           results.hubspot ? 'success' : 'error');
+                    addLog(`✅ Claude API: ${results.claude ? 'Connected' : 'Failed'}`, 
+                           results.claude ? 'success' : 'error');
+                    addLog(`✅ MySQL Database: ${results.mysql ? 'Connected' : 'Failed'}`, 
+                           results.mysql ? 'success' : 'error');
+                    addLog(`✅ Kixie SMS API: ${results.kixie ? 'Connected' : 'Failed'}`, 
+                           results.kixie ? 'success' : 'error');
+                    
+                    if (results.errors && results.errors.length > 0) {
+                        results.errors.forEach(error => addLog(`❌ ${error}`, 'error'));
+                    }
+                    
+                    updateStatus('success', 'Connection test completed');
+                } else {
+                    addLog(`❌ Connection test failed: ${data.error}`, 'error');
+                    updateStatus('error', 'Connection test failed');
+                }
+                
+                setTimeout(() => updateStatus('ready'), 3000);
+                
+            } catch (error) {
+                addLog(`❌ Connection test failed: ${error.message}`, 'error');
+                updateStatus('error', 'Connection failed');
+                setTimeout(() => updateStatus('ready'), 3000);
+            }
+        }
+        
+        async function processQuestion() {
+            if (isProcessing) return;
+            
+            const question = document.getElementById('user-question').value.trim();
+            const actionType = document.getElementById('action-type').value;
+            
+            if (!question) {
+                addLog('Please enter a question', 'warning');
+                return;
+            }
+            
+            isProcessing = true;
+            const processBtn = document.getElementById('process-btn');
+            processBtn.disabled = true;
+            processBtn.textContent = 'Processing...';
+            
+            updateStatus('processing', 'Analyzing question...');
+            addLog(`Processing question: "${question}"`, 'info');
+            
+            try {
+                // Show loading in results
+                const resultsSection = document.getElementById('results-section');
+                const resultsContent = document.getElementById('results-content');
+                
+                resultsSection.style.display = 'block';
+                resultsContent.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Claude is analyzing your question and querying the data...</p>
+                    </div>
+                `;
+                
+                // Make actual API call to backend
+                const response = await fetch('/api/process-question', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        action_type: actionType
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentResults = data.results;
+                    
+                    // Display results
+                    displayResults(data);
+                    
+                    // Show actions if action type selected
+                    if (actionType) {
+                        document.getElementById('actions-section').style.display = 'block';
+                        addLog(`Action "${actionType}" ready to execute`, 'info');
+                    }
+                    
+                    updateStatus('success', 'Query completed');
+                    addLog('✅ Query processing completed successfully', 'success');
+                    addLog(`Found ${data.total_records} total records`, 'info');
+                    
+                } else {
+                    throw new Error(data.error || 'Unknown error occurred');
+                }
+                
+            } catch (error) {
+                addLog(`❌ Error processing question: ${error.message}`, 'error');
+                updateStatus('error', 'Query failed');
+                
+                document.getElementById('results-content').innerHTML = `
+                    <div style="color: #dc3545; text-align: center; padding: 20px;">
+                        <h4>❌ Error</h4>
+                        <p>${error.message}</p>
+                        <p>Please check the logs and ensure your backend is running properly.</p>
+                    </div>
+                `;
+            } finally {
+                isProcessing = false;
+                processBtn.disabled = false;
+                processBtn.textContent = '🚀 Process Question';
+                setTimeout(() => updateStatus('ready'), 3000);
+            }
+        }
+        
+        function displayResults(data) {
+            const resultsContent = document.getElementById('results-content');
+            
+            let html = '';
+            
+            // Show summary if available
+            if (data.summary) {
+                html += `
+                    <div class="summary-section">
+                        <h4>📊 Summary</h4>
+                        <p>${data.summary}</p>
+                    </div>
+                `;
+            }
+            
+            // Show analysis if available
+            if (data.analysis && Object.keys(data.analysis).length > 0) {
+                html += `
+                    <div class="summary-section">
+                        <h4>🔍 Analysis</h4>
+                        <pre>${JSON.stringify(data.analysis, null, 2)}</pre>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="result-header">
+                    <span class="result-title">Found ${data.total_records} results</span>
+                    <span class="result-source">Real Data</span>
+                </div>
+            `;
+            
+            if (data.results && data.results.length > 0) {
+                data.results.forEach((item, index) => {
+                    html += `
+                        <div class="result-item">
+                            <div class="result-header">
+                                <span class="result-title">${item.source || `Result ${index + 1}`}</span>
+                            </div>
+                    `;
+                    
+                    // Display the actual data
+                    if (item.data && typeof item.data === 'object') {
+                        for (let [key, value] of Object.entries(item.data)) {
+                            if (value !== null && value !== undefined) {
+                                html += `<p><strong>${key}:</strong> ${value}</p>`;
+                            }
+                        }
+                    } else {
+                        html += `<pre>${JSON.stringify(item.data, null, 2)}</pre>`;
+                    }
+                    
+                    html += '</div>';
+                });
+            } else {
+                html += `
+                    <div class="result-item">
+                        <p>No detailed results to display, but query was processed successfully.</p>
+                    </div>
+                `;
+            }
+            
+            resultsContent.innerHTML = html;
+        }
+        
+        async function executeAction(actionType) {
+            if (!currentResults) {
+                addLog('No results available for action', 'warning');
+                return;
+            }
+            
+            updateStatus('processing', `Executing ${actionType}...`);
+            addLog(`🚀 Executing action: ${actionType}`, 'info');
+            
+            try {
+                const response = await fetch('/api/execute-action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action_type: actionType,
+                        results: currentResults
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addLog(`✅ Action "${actionType}" completed successfully`, 'success');
+                    addLog(`Processed ${data.processed_records} records`, 'info');
+                    updateStatus('success', 'Action completed');
+                } else {
+                    throw new Error(data.error || 'Action failed');
+                }
+                
+            } catch (error) {
+                addLog(`❌ Action failed: ${error.message}`, 'error');
+                updateStatus('error', 'Action failed');
+            }
+            
+            setTimeout(() => updateStatus('ready'), 3000);
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'Enter':
+                        e.preventDefault();
+                        if (!isProcessing) processQuestion();
+                        break;
+                    case 'l':
+                        e.preventDefault();
+                        clearLogs();
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        clearResults();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

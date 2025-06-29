@@ -1,10 +1,6 @@
-setuptools>=65.0
-wheel>=0.38.0
-Cython>=0.29.0
-mysql-connector-python==8.2.0
+flask==2.3.3
+gunicorn==21.2.0
+flask-cors==4.0.0
 requests==2.31.0
 python-dotenv==1.0.0
 anthropic==0.25.1
-pandas==2.1.0
-flask==2.3.3
-gunicorn==21.2.0
